@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>GGC Ryder Cup 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Libre+Franklin:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: scoreboard hero over the course photo, then a running card per session, roster split by team, rules last. */
+:root {
+  --bg: #f3f5f1;
+  --surface: #ffffff;
+  --sunk: #e7ebe4;
+  --fg: #17201a;
+  --muted: #5c675f;
+  --line: #d3d9cf;
+  --hem: #1f4f9c;        /* Team Hemming */
+  --hem-soft: #e2ebf8;
+  --pie: #b3262d;        /* Team Piercy */
+  --pie-soft: #f8e3e3;
+  --half: #7d7a6c;
+  --gold: #b88a1b;
+  --on-team: #ffffff;
+  --font-display: "Big Shoulders Display", "Oswald", "Arial Narrow", Impact, sans-serif;
+  --font-body: "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101512; --surface: #18201b; --sunk: #222b25; --fg: #e9eee8; --muted: #9aa69d; --line: #2e3a32;
+    --hem: #6f9ae6; --hem-soft: #1b2a44; --pie: #ea6d70; --pie-soft: #3d1d1f; --half: #b3ae9a; --gold: #e0b44a; --on-team: #0d1210;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101512; --surface: #18201b; --sunk: #222b25; --fg: #e9eee8; --muted: #9aa69d; --line: #2e3a32;
+  --hem: #6f9ae6; --hem-soft: #1b2a44; --pie: #ea6d70; --pie-soft: #3d1d1f; --half: #b3ae9a; --gold: #e0b44a; --on-team: #0d1210;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.55 var(--font-body); }
+img { max-width: 100%; display: block; }
+[hidden] { display: none !important; }
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 16px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1; letter-spacing: .01em; }
+.eyebrow { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; color: var(--muted); }
+
+/* ---------- Hero / scoreboard ---------- */
+.hero { position: relative; color: #fff; background: #1d3a22 url("img/hero.jpg") center 40% / cover no-repeat; }
+.hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8,16,10,.55) 0%, rgba(8,16,10,.82) 100%); }
+.hero .wrap { position: relative; padding-block: 28px 30px; display: grid; gap: 22px; }
+.hero-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 8px 24px; }
+.hero h1 { font-size: clamp(40px, 8vw, 76px); font-weight: 900; text-transform: uppercase; }
+.hero h1 span { color: #f1d27a; }
+.hero .meta { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; font-weight: 600; opacity: .9; }
+
+.board { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
+.side { display: grid; gap: 2px; }
+.side.p { text-align: right; }
+.side .tname { font-family: var(--font-display); font-weight: 800; font-size: clamp(20px, 3.4vw, 30px); text-transform: uppercase; letter-spacing: .04em; }
+.side .cap { font-size: 12px; opacity: .8; }
+.score { display: flex; align-items: stretch; gap: 6px; font-family: var(--font-display); font-weight: 900; font-variant-numeric: tabular-nums; }
+.score div { min-width: 2.1em; padding: 4px 10px 0; font-size: clamp(54px, 11vw, 96px); line-height: 1; text-align: center; border-radius: 6px; }
+.score .h { background: #1f4f9c; }
+.score .p { background: #b3262d; }
+.score .dash { min-width: 0; padding: 0; background: none; opacity: .5; }
+
+.track { display: grid; gap: 8px; }
+.bar { position: relative; height: 14px; border-radius: 7px; background: rgba(255,255,255,.18); overflow: hidden; }
+.bar .fh, .bar .fp { position: absolute; top: 0; bottom: 0; transition: width .5s ease; }
+.bar .fh { left: 0; background: #4f86e0; }
+.bar .fp { right: 0; background: #e0555b; }
+.mark { position: absolute; top: -4px; bottom: -4px; width: 2px; background: #f1d27a; }
+.track-legend { display: flex; justify-content: space-between; font-size: 12px; opacity: .85; gap: 12px; flex-wrap: wrap; }
+.status { font-weight: 700; font-size: 15px; }
+.status .gold { color: #f1d27a; }
+
+/* ---------- Nav ---------- */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+.nav .wrap { display: flex; gap: 4px; align-items: center; overflow-x: auto; padding-block: 8px; scrollbar-width: none; }
+.nav a { white-space: nowrap; text-decoration: none; color: var(--fg); font-weight: 600; font-size: 13px; padding: 6px 10px; border-radius: 6px; }
+.nav a:hover { background: var(--sunk); }
+.nav .spacer { flex: 1; }
+.edit-toggle { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.edit-toggle[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.edit-toggle[aria-pressed="true"] .dot { background: var(--gold); }
+
+main .wrap { display: grid; gap: 44px; padding-block: 32px 56px; }
+section { display: grid; gap: 16px; scroll-margin-top: 60px; }
+.sec-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.sec-head h2 { font-size: clamp(30px, 5vw, 42px); font-weight: 800; text-transform: uppercase; }
+.sync { font-size: 12px; color: var(--muted); }
+
+/* ---------- Sessions ---------- */
+.session { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.session-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; padding: 14px 16px; border-bottom: 1px solid var(--line); background: var(--sunk); }
+.session-head h3 { font-size: 26px; font-weight: 800; text-transform: uppercase; }
+.session-head .sub { font-size: 13px; color: var(--muted); font-weight: 500; }
+.today { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; background: var(--gold); color: var(--on-team); padding: 3px 8px; border-radius: 4px; margin-left: 8px; vertical-align: 4px; }
+.sess-score { display: flex; gap: 6px; align-items: center; font-family: var(--font-display); font-weight: 800; font-size: 24px; font-variant-numeric: tabular-nums; }
+.sess-score .h { color: var(--hem); } .sess-score .p { color: var(--pie); }
+.sess-score small { font-family: var(--font-body); font-size: 12px; color: var(--muted); font-weight: 500; margin-left: 4px; }
+
+.match { padding: 16px; display: grid; gap: 12px; }
+.match + .match { border-top: 1px solid var(--line); }
+.tee { font-family: var(--font-mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.pairing { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; }
+.pair { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.pair.p { flex-direction: row-reverse; text-align: right; }
+.faces { display: flex; flex-shrink: 0; }
+.faces img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--surface); background: var(--sunk); }
+.faces img + img { margin-left: -12px; }
+.pair.h .faces img { box-shadow: 0 0 0 2px var(--hem); }
+.pair.p .faces img { box-shadow: 0 0 0 2px var(--pie); }
+.names { min-width: 0; font-weight: 700; line-height: 1.25; font-size: 15px; }
+.names small { display: block; font-weight: 500; color: var(--muted); font-size: 12px; }
+.vs { font-family: var(--font-display); font-weight: 800; color: var(--muted); font-size: 18px; }
+
+.segs { display: grid; gap: 8px; }
+.seg { display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: center; background: var(--bg); border-radius: 8px; padding: 8px 10px; }
+.seg-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.result { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
+.chip { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; padding: 3px 10px; border-radius: 999px; }
+.chip.h { background: var(--hem); color: var(--on-team); }
+.chip.p { background: var(--pie); color: var(--on-team); }
+.chip.a { background: var(--sunk); color: var(--fg); border: 1px solid var(--line); }
+.chip.none { color: var(--muted); font-weight: 500; padding-inline: 0; }
+.margin { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+
+.picker { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.opts { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.opts button { border: 0; background: none; padding: 7px 10px; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--muted); }
+.opts button + button { border-left: 1px solid var(--line); }
+.opts button[aria-pressed="true"].h { background: var(--hem); color: var(--on-team); }
+.opts button[aria-pressed="true"].p { background: var(--pie); color: var(--on-team); }
+.opts button[aria-pressed="true"].a { background: var(--half); color: var(--on-team); }
+.picker input { width: 76px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-family: var(--font-mono); font-size: 13px; }
+.picker .clear { border: 0; background: none; color: var(--muted); font-size: 12px; text-decoration: underline; cursor: pointer; padding: 4px; }
+.fmt-note { font-size: 13px; color: var(--muted); padding: 0 16px 14px; }
+
+/* ---------- Teams ---------- */
+.teams { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.team { border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: var(--surface); }
+.team-head { padding: 14px 16px; color: #fff; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.team.h .team-head { background: #1f4f9c; } .team.p .team-head { background: #b3262d; }
+.team-head h3 { font-size: 28px; font-weight: 900; text-transform: uppercase; }
+.team-head .pts { font-family: var(--font-display); font-weight: 800; font-size: 28px; font-variant-numeric: tabular-nums; }
+.players { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); }
+.player { background: var(--surface); display: grid; gap: 8px; padding: 12px; }
+.player img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; background: var(--sunk); }
+.player .pn { font-weight: 700; line-height: 1.2; }
+.player .nick { font-size: 12px; color: var(--muted); font-style: italic; }
+.player .stats { display: flex; justify-content: space-between; gap: 6px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.player .stats b { color: var(--fg); }
+.capt { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+
+/* ---------- Rules ---------- */
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.rule { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 6px; align-content: start; }
+.rule h3 { font-size: 22px; font-weight: 800; text-transform: uppercase; }
+.rule p { margin: 0; color: var(--muted); }
+.big { font-family: var(--font-display); font-weight: 900; font-size: 64px; line-height: .9; color: var(--gold); }
+.step { font-family: var(--font-mono); font-size: 12px; color: var(--gold); }
+.holes { display: flex; gap: 6px; }
+.holes span { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--sunk); font-weight: 700; font-size: 13px; }
+
+footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+footer .wrap { padding-block: 18px; }
+
+@media (max-width: 560px) {
+  .pairing { grid-template-columns: 1fr; gap: 6px; }
+  .pair.p { flex-direction: row; text-align: left; }
+  .vs { font-size: 14px; padding-left: 4px; }
+  .seg { grid-template-columns: 1fr; gap: 6px; }
+  .board { grid-template-columns: 1fr 1fr; }
+  .score { grid-column: 1 / -1; grid-row: 2; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) { .bar .fh, .bar .fp { transition: none; } }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-top">
+      <div>
+        <div class="meta">Michigan Golf Trip · Oct. 1–3, 2026</div>
+        <h1>GGC Ryder <span>Cup</span></h1>
+      </div>
+      <div class="meta">South Course · Belvedere</div>
+    </div>
+    <div class="board">
+      <div class="side h"><span class="tname">Team Hemming</span><span class="cap">Capt. Travis Hemming</span></div>
+      <div class="score" aria-live="polite"><div class="h" id="totH">0</div><div class="dash">–</div><div class="p" id="totP">0</div></div>
+      <div class="side p"><span class="tname">Team Piercy</span><span class="cap">Capt. Harley Piercy</span></div>
+    </div>
+    <div class="track">
+      <div class="bar" role="img" id="bar" aria-label="Points progress toward 6.5">
+        <div class="fh" id="fillH" style="width:0"></div>
+        <div class="fp" id="fillP" style="width:0"></div>
+        <div class="mark" style="left:calc(50% - 1px)"></div>
+      </div>
+      <div class="track-legend"><span>12 points available</span><span>6.5 to win the Cup</span></div>
+      <div class="status" id="status"></div>
+    </div>
+  </div>
+</header>
+
+<nav class="nav" aria-label="Sections">
+  <div class="wrap">
+    <a href="#matches">Matches</a>
+    <a href="#teams">Teams</a>
+    <a href="#rules">Rules</a>
+    <span class="spacer"></span>
+    <button class="edit-toggle" id="editToggle" aria-pressed="false" type="button"><span class="dot"></span><span id="editLabel">Enter results</span></button>
+  </div>
+</nav>
+
+<main>
+  <div class="wrap">
+    <section id="matches">
+      <div class="sec-head">
+        <h2>Matches</h2>
+        <span class="sync" id="sync">Loading results…</span>
+      </div>
+      <div id="sessions" style="display:grid;gap:20px"></div>
+    </section>
+
+    <section id="teams">
+      <div class="sec-head"><h2>Teams</h2><span class="sync">Handicap index in parentheses · points earned this week</span></div>
+      <div class="teams" id="teamsEl"></div>
+    </section>
+
+    <section id="rules">
+      <div class="sec-head"><h2>Scoring &amp; Tiebreakers</h2></div>
+      <div class="rules">
+        <div class="rule">
+          <span class="eyebrow">The road to the Cup</span>
+          <div class="big">6.5</div>
+          <p>Points required to win. Twelve points are on the table: four in Thursday best ball, four in Friday singles, four in Friday scramble. A halved match is worth half a point to each side.</p>
+        </div>
+        <div class="rule">
+          <span class="step">Tiebreaker 1 · Primary</span>
+          <h3>Full team sudden death</h3>
+          <p>If it ends 6–6, a 4-man full team sudden death scramble begins. Play cycles through these holes until a champion is decided:</p>
+          <div class="holes"><span>1</span><span>4</span><span>9</span></div>
+        </div>
+        <div class="rule">
+          <span class="step">Tiebreaker 2 · Contingency</span>
+          <h3>Short game area</h3>
+          <p>If the course is unavailable for the scramble, the teams move to the short game area. Captains alternate picking holes in the same sudden death format.</p>
+        </div>
+        <div class="rule">
+          <span class="eyebrow">Friday evening</span>
+          <h3>Awards &amp; dinner</h3>
+          <p>Official tournament awards are presented at dinner on Friday, Oct. 2.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer><div class="wrap">GGC Ryder Cup 2026 · Tee times are Eastern.</div></footer>
+
+<script>
+const PLAYERS = {
+  hemming:        { name: "Travis Hemming",      hcp: 9.1,  team: "h", captain: true },
+  hassells:       { name: "Sean Hassells",       hcp: 1.8,  team: "h", nick: "Shawntay" },
+  rottier:        { name: "Mitchell Rottier",    hcp: 2.3,  team: "h" },
+  santacantarina: { name: "Mike Santacantarina", hcp: 3.1,  team: "h", nick: "Junior" },
+  piercy:         { name: "Harley Piercy",       hcp: 10.4, team: "p", captain: true },
+  benson:         { name: "Trevor Benson",       hcp: 2.2,  team: "p", nick: "Trev" },
+  douglas:        { name: "Grant Douglas",       hcp: 3.9,  team: "p", nick: "G-Baby" },
+  theisen:        { name: "Jeremy Theisen",      hcp: 2.9,  team: "p", nick: "JT" },
+};
+const NINES = ["Front 9", "Back 9"];
+const SESSIONS = [
+  { id: "thu", day: "Thursday, Oct. 1", date: "2026-10-01", course: "South Course", format: "2-Man Best Ball",
+    note: "Each foursome plays two 9-hole matches, worth 1 point each. 4 points available.",
+    matches: [
+      { tee: "1:39 pm", h: ["hemming", "hassells"], p: ["benson", "douglas"], segs: NINES },
+      { tee: "1:50 pm", h: ["rottier", "santacantarina"], p: ["theisen", "piercy"], segs: NINES },
+    ] },
+  { id: "fam", day: "Friday, Oct. 2", date: "2026-10-02", course: "Belvedere", format: "Morning Singles",
+    note: "Singles is one 18-hole match, worth 1 point each. 4 points available.",
+    matches: [
+      { tee: "9:00 am", h: ["hemming"], p: ["piercy"], segs: ["18 holes"] },
+      { tee: "9:00 am", h: ["rottier"], p: ["douglas"], segs: ["18 holes"] },
+      { tee: "9:10 am", h: ["hassells"], p: ["benson"], segs: ["18 holes"] },
+      { tee: "9:10 am", h: ["santacantarina"], p: ["theisen"], segs: ["18 holes"] },
+    ] },
+  { id: "fpm", day: "Friday, Oct. 2", date: "2026-10-02", course: "Belvedere", format: "Afternoon 2-Man Scramble",
+    note: "Each foursome plays two 9-hole matches, worth 1 point each. 4 points available.",
+    matches: [
+      { tee: "2:00 pm", h: ["rottier", "hassells"], p: ["douglas", "theisen"], segs: NINES },
+      { tee: "2:10 pm", h: ["hemming", "santacantarina"], p: ["benson", "piercy"], segs: NINES },
+    ] },
+];
+// Every point-bearing match gets a stable id, e.g. "thu-1-2" = Thursday, 1st group, back nine.
+SESSIONS.forEach(s => s.matches.forEach((m, i) => { m.ids = m.segs.map((_, j) => `${s.id}-${i + 1}-${j + 1}`); }));
+const TO_WIN = 6.5, TOTAL = 12;
+
+let results = {};      // id -> { w: "h" | "p" | "a", m: "2&1" }
+let editing = false;
+let store = null;      // storage adapter
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const last = k => PLAYERS[k].name.split(" ").slice(1).join(" ");
+const fmt = n => (n % 1 ? (Math.floor(n) || "") + "½" : String(n)) || "0";
+const photo = k => `img/players/${k}.jpg`;
+
+function pts(id) {
+  const r = results[id];
+  if (!r || !r.w) return null;
+  return r.w === "h" ? [1, 0] : r.w === "p" ? [0, 1] : [0.5, 0.5];
+}
+function tally(ids) {
+  let h = 0, p = 0, done = 0;
+  ids.forEach(id => { const x = pts(id); if (x) { h += x[0]; p += x[1]; done++; } });
+  return { h, p, done };
+}
+const allIds = () => SESSIONS.flatMap(s => s.matches.flatMap(m => m.ids));
+
+function renderBoard() {
+  const t = tally(allIds());
+  $("totH").textContent = fmt(t.h);
+  $("totP").textContent = fmt(t.p);
+  $("fillH").style.width = (t.h / TOTAL * 100) + "%";
+  $("fillP").style.width = (t.p / TOTAL * 100) + "%";
+  const left = TOTAL - t.h - t.p;
+  let msg;
+  if (t.h >= TO_WIN) msg = `<span class="gold">Team Hemming wins the Cup.</span>`;
+  else if (t.p >= TO_WIN) msg = `<span class="gold">Team Piercy wins the Cup.</span>`;
+  else if (left === 0) msg = `<span class="gold">6–6. Sudden death scramble on holes 1, 4 and 9.</span>`;
+  else if (t.done === 0) msg = "No points posted yet. Thursday best ball tees off at 1:39 pm.";
+  else {
+    const needH = TO_WIN - t.h, needP = TO_WIN - t.p;
+    msg = `${fmt(left)} points left · Hemming needs ${fmt(needH)} · Piercy needs ${fmt(needP)}`;
+  }
+  $("status").innerHTML = msg;
+}
+
+function sideHTML(keys, team) {
+  const faces = keys.map(k => `<img src="${photo(k)}" alt="${esc(PLAYERS[k].name)}" loading="lazy">`).join("");
+  const names = keys.map(last).join(" &amp; ");
+  const sub = keys.map(k => PLAYERS[k].hcp.toFixed(1)).join(" / ");
+  return `<div class="pair ${team}"><div class="faces">${faces}</div><div class="names">${names}<small>${team === "h" ? "Hemming" : "Piercy"} · ${sub}</small></div></div>`;
+}
+
+function resultHTML(id) {
+  const r = results[id] || {};
+  if (editing) {
+    const b = (w, label) => `<button type="button" class="${w}" data-id="${id}" data-w="${w}" aria-pressed="${r.w === w}">${label}</button>`;
+    return `<div class="picker">
+      <div class="opts" role="group" aria-label="Winner">${b("h", "Hemming")}${b("a", "Halved")}${b("p", "Piercy")}</div>
+      <input id="m-${id}" data-id="${id}" placeholder="e.g. 2&amp;1" value="${esc(r.m || "")}" aria-label="Margin" maxlength="12">
+      ${r.w ? `<button type="button" class="clear" data-id="${id}" data-w="">Clear</button>` : ""}
+    </div>`;
+  }
+  if (!r.w) return `<div class="result"><span class="chip none">Not played yet</span></div>`;
+  const label = r.w === "h" ? "Hemming wins" : r.w === "p" ? "Piercy wins" : "Halved";
+  return `<div class="result"><span class="chip ${r.w}">${label}</span>${r.m ? `<span class="margin">${esc(r.m)}</span>` : ""}</div>`;
+}
+
+function renderSessions() {
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Detroit" });
+  $("sessions").innerHTML = SESSIONS.map(s => {
+    const t = tally(s.matches.flatMap(m => m.ids));
+    const matches = s.matches.map(m => `
+      <div class="match">
+        <div class="tee">${m.tee} EST</div>
+        <div class="pairing">${sideHTML(m.h, "h")}<span class="vs">vs</span>${sideHTML(m.p, "p")}</div>
+        <div class="segs">${m.segs.map((label, j) => `
+          <div class="seg"><span class="seg-label">${label}</span>${resultHTML(m.ids[j])}</div>`).join("")}
+        </div>
+      </div>`).join("");
+    return `<article class="session">
+      <div class="session-head">
+        <div><h3>${s.format}${s.date === today ? '<span class="today">Today</span>' : ""}</h3><div class="sub">${s.day} · ${s.course}</div></div>
+        <div class="sess-score"><span class="h">${fmt(t.h)}</span><span>–</span><span class="p">${fmt(t.p)}</span><small>${t.done}/4 final</small></div>
+      </div>
+      ${matches}
+      <div class="fmt-note">${s.note}</div>
+    </article>`;
+  }).join("");
+}
+
+function playerRecord(k) {
+  let won = 0, w = 0, l = 0, hv = 0;
+  SESSIONS.forEach(s => s.matches.forEach(m => {
+    const side = m.h.includes(k) ? 0 : m.p.includes(k) ? 1 : -1;
+    if (side < 0) return;
+    m.ids.forEach(id => {
+      const x = pts(id); if (!x) return;
+      won += x[side];
+      if (x[side] === 1) w++; else if (x[side] === 0) l++; else hv++;
+    });
+  }));
+  return { won, rec: `${w}-${l}-${hv}` };
+}
+
+function renderTeams() {
+  const t = tally(allIds());
+  $("teamsEl").innerHTML = ["h", "p"].map(team => {
+    const keys = Object.keys(PLAYERS).filter(k => PLAYERS[k].team === team)
+      .sort((a, b) => (PLAYERS[b].captain ? 1 : 0) - (PLAYERS[a].captain ? 1 : 0));
+    return `<div class="team ${team}">
+      <div class="team-head"><h3>Team ${team === "h" ? "Hemming" : "Piercy"}</h3><span class="pts">${fmt(team === "h" ? t.h : t.p)} pts</span></div>
+      <div class="players">${keys.map(k => {
+        const P = PLAYERS[k], r = playerRecord(k);
+        return `<div class="player">
+          <img src="${photo(k)}" alt="${esc(P.name)}" loading="lazy">
+          <div>${P.captain ? '<div class="capt">Captain</div>' : ""}<div class="pn">${esc(P.name)} (${P.hcp.toFixed(1)})</div>${P.nick ? `<div class="nick">“${esc(P.nick)}”</div>` : ""}</div>
+          <div class="stats"><span>W-L-H <b>${r.rec}</b></span><span><b>${fmt(r.won)}</b> pts</span></div>
+        </div>`;
+      }).join("")}</div>
+    </div>`;
+  }).join("");
+}
+
+function render() { renderBoard(); renderSessions(); renderTeams(); }
+
+/* ---------- Storage: shared Claude artifact store when available, this browser otherwise ---------- */
+const LS_KEY = "ggc-ryder-2026-results";
+function localStore() {
+  return {
+    shared: false,
+    load() { try { return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); } catch { return {}; } },
+    async save(id, val) {
+      const all = this.load();
+      if (val) all[id] = val; else delete all[id];
+      try { localStorage.setItem(LS_KEY, JSON.stringify(all)); } catch {}
+    },
+  };
+}
+
+async function setResult(id, patch) {
+  const cur = results[id] || {};
+  const next = { ...cur, ...patch };
+  const val = next.w ? { w: next.w, m: (next.m || "").trim() } : null;
+  if (val) results[id] = val; else delete results[id];
+  render();
+  try { await store.save(id, val); setSync(); }
+  catch (e) { $("sync").textContent = "Couldn't save that result. Check your connection and try again."; }
+}
+
+function setSync() {
+  $("sync").textContent = store.shared ? "Live · results are shared with everyone viewing" : "Results are saved in this browser";
+}
+
+document.addEventListener("click", e => {
+  const btn = e.target.closest("button[data-id]");
+  if (!btn) return;
+  const id = btn.dataset.id, w = btn.dataset.w;
+  const cur = results[id] || {};
+  setResult(id, { w: cur.w === w ? "" : w, m: w ? (cur.m || "") : "" });
+});
+document.addEventListener("change", e => {
+  const inp = e.target.closest("input[data-id]");
+  if (!inp) return;
+  const id = inp.dataset.id;
+  const cur = results[id] || {};
+  if (!cur.w) { $("sync").textContent = "Pick a winner first, then add the margin."; return; }
+  if ((cur.m || "") !== inp.value.trim()) setResult(id, { m: inp.value });
+});
+$("editToggle").addEventListener("click", () => {
+  editing = !editing;
+  $("editToggle").setAttribute("aria-pressed", editing);
+  $("editLabel").textContent = editing ? "Done editing" : "Enter results";
+  renderSessions();
+});
+
+store = localStore();
+results = store.load();
+render();
+setSync();
+
+(async () => {
+  const db = window.claude && window.claude.use ? await window.claude.use("db").catch(() => null) : null;
+  if (!db) return;
+  const col = db.collection("results");
+  store = {
+    shared: true,
+    async save(id, val) { if (val) await col.doc(id).set(val); else await col.doc(id).delete(); },
+  };
+  setSync();
+  col.onSnapshot(snap => {
+    const next = {};
+    snap.docs.forEach(d => { const v = d.data(); if (v && v.w) next[d.id] = { w: v.w, m: v.m || "" }; });
+    results = next;
+    const active = document.activeElement;
+    const keep = active && active.id && active.id.startsWith("m-") ? { id: active.id, v: active.value } : null;
+    render();
+    if (keep && $(keep.id)) { $(keep.id).value = keep.v; $(keep.id).focus(); }
+  }, () => { $("sync").textContent = "Live updates stopped. Reload the page to reconnect."; });
+})();
+</script>
+</body>
+</html>
