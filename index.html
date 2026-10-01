@@ -7,6 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Libre+Franklin:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
 <style>
 /* Layout: scoreboard hero over the course photo, then a running card per session, roster split by team, rules last. */
 :root {
@@ -484,10 +487,8 @@ results = store.load();
 render();
 setSync();
 
-(async () => {
-  const db = window.claude && window.claude.use ? await window.claude.use("db").catch(() => null) : null;
-  if (!db) return;
-  const col = db.collection("results");
+// Both the Claude artifact store and Firestore expose the same doc().set/delete + onSnapshot shape.
+function useShared(col) {
   store = {
     shared: true,
     async save(id, val) { if (val) await col.doc(id).set(val); else await col.doc(id).delete(); },
@@ -502,7 +503,18 @@ setSync();
     render();
     if (keep && $(keep.id)) { $(keep.id).value = keep.v; $(keep.id).focus(); }
   }, () => { $("sync").textContent = "Live updates stopped. Reload the page to reconnect."; });
-})();
+}
+
+if (window.FIREBASE_CONFIG && window.firebase) {
+  // Hosted site (GitHub Pages): sync through Firestore.
+  try {
+    firebase.initializeApp(window.FIREBASE_CONFIG);
+    useShared(firebase.firestore().collection("results"));
+  } catch (e) { $("sync").textContent = "Couldn't connect to the live scoreboard. Results are saved in this browser."; }
+} else if (window.claude && window.claude.use) {
+  // Claude artifact: sync through the artifact's shared store.
+  window.claude.use("db").catch(() => null).then(db => { if (db) useShared(db.collection("results")); });
+}
 </script>
 </body>
 </html>
